@@ -6960,3 +6960,217 @@ File Path                           PID    Runtime      # DAGs    # Errors  Last
 /opt/airflow/dags/transform_dag.py                           1           0  0.56s           2024-05-11T15:59:22
 /opt/airflow/dags/airflowtuto.py                             1           0  0.12s           2024-05-11T15:59:49
 ================================================================================
+[2024-05-11T16:00:21.565+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  0.67s           2024-05-11T15:59:53
+/opt/airflow/dags/ademe_dag.py                               1           0  0.65s           2024-05-11T16:00:05
+/opt/airflow/dags/airflowtuto.py                             1           0  0.11s           2024-05-11T16:00:20
+================================================================================
+[2024-05-11T16:00:52.408+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.69s           2024-05-11T16:00:36
+/opt/airflow/dags/transform_dag.py                           1           0  0.61s           2024-05-11T16:00:24
+/opt/airflow/dags/airflowtuto.py                             1           0  0.22s           2024-05-11T16:00:51
+================================================================================
+[2024-05-11T16:01:23.143+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.67s           2024-05-11T16:01:07
+/opt/airflow/dags/transform_dag.py                           1           0  0.58s           2024-05-11T16:00:55
+/opt/airflow/dags/airflowtuto.py                             1           0  0.11s           2024-05-11T16:01:22
+================================================================================
+[2024-05-11T16:01:53.620+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  1.33s           2024-05-11T16:01:26
+/opt/airflow/dags/ademe_dag.py                               1           0  0.69s           2024-05-11T16:01:38
+/opt/airflow/dags/airflowtuto.py                             1           0  0.14s           2024-05-11T16:01:52
+================================================================================
+[2024-05-11T16:02:23.899+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.70s           2024-05-11T16:02:09
+/opt/airflow/dags/transform_dag.py                           1           0  0.63s           2024-05-11T16:01:57
+/opt/airflow/dags/airflowtuto.py                             1           0  0.11s           2024-05-11T16:02:23
+================================================================================
+[2024-05-11T16:02:54.308+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  1.24s           2024-05-11T16:02:29
+/opt/airflow/dags/ademe_dag.py                               1           0  0.82s           2024-05-11T16:02:39
+/opt/airflow/dags/airflowtuto.py                             1           0  0.13s           2024-05-11T16:02:53
+================================================================================
+[2024-05-11T16:03:24.504+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  2.16s           2024-05-11T16:03:12
+/opt/airflow/dags/transform_dag.py                           1           0  0.68s           2024-05-11T16:03:00
+/opt/airflow/dags/airflowtuto.py                             1           0  0.36s           2024-05-11T16:03:24
+================================================================================
+[2024-05-11T16:03:33.542+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2024-05-11T16:03:33.547+0000] {manager.py:741} INFO - There are 3 files in /opt/airflow/dags
+[2024-05-11T16:03:55.031+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                             PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  1.70s           2024-05-11T16:03:44
+/opt/airflow/dags/transform_dag.py                           1           0  0.60s           2024-05-11T16:03:30
+/opt/airflow/dags/airflowtuto.py     1665  0.01s             1           0  0.36s           2024-05-11T16:03:24
+================================================================================
+[2024-05-11T16:04:25.292+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                             PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.65s           2024-05-11T16:04:15
+/opt/airflow/dags/transform_dag.py                           1           0  0.58s           2024-05-11T16:04:01
+/opt/airflow/dags/airflowtuto.py     1675  0.01s             1           0  0.12s           2024-05-11T16:03:55
+================================================================================
+[2024-05-11T16:04:55.569+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                             PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  0.69s           2024-05-11T16:04:33
+/opt/airflow/dags/ademe_dag.py                               1           0  0.67s           2024-05-11T16:04:46
+/opt/airflow/dags/airflowtuto.py     1686  0.01s             1           0  0.12s           2024-05-11T16:04:25
+================================================================================
+[2024-05-11T16:05:25.882+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                             PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  0.98s           2024-05-11T16:05:04
+/opt/airflow/dags/ademe_dag.py                               1           0  0.64s           2024-05-11T16:05:17
+/opt/airflow/dags/airflowtuto.py     1696  0.01s             1           0  0.19s           2024-05-11T16:04:55
+================================================================================
+[2024-05-11T16:05:56.189+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                             PID  Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.66s           2024-05-11T16:05:48
+/opt/airflow/dags/transform_dag.py                           1           0  0.60s           2024-05-11T16:05:35
+/opt/airflow/dags/airflowtuto.py     1708  0.01s             1           0  0.16s           2024-05-11T16:05:26
+================================================================================
+[2024-05-11T16:06:26.992+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  2.57s           2024-05-11T16:06:08
+/opt/airflow/dags/airflowtuto.py                             1           0  1.19s           2024-05-11T16:05:57
+/opt/airflow/dags/ademe_dag.py                               1           0  0.68s           2024-05-11T16:06:19
+================================================================================
+[2024-05-11T16:06:57.238+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/transform_dag.py                           1           0  1.64s           2024-05-11T16:06:40
+/opt/airflow/dags/ademe_dag.py                               1           0  0.95s           2024-05-11T16:06:50
+/opt/airflow/dags/airflowtuto.py                             1           0  0.15s           2024-05-11T16:06:28
+================================================================================
+[2024-05-11T16:07:27.375+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.73s           2024-05-11T16:07:21
+/opt/airflow/dags/transform_dag.py                           1           0  0.66s           2024-05-11T16:07:11
+/opt/airflow/dags/airflowtuto.py                             1           0  0.27s           2024-05-11T16:06:58
+================================================================================
+[2024-05-11T16:07:57.779+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  1.95s           2024-05-11T16:07:53
+/opt/airflow/dags/transform_dag.py                           1           0  0.62s           2024-05-11T16:07:42
+/opt/airflow/dags/airflowtuto.py                             1           0  0.11s           2024-05-11T16:07:29
+================================================================================
+[2024-05-11T16:08:28.089+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  1.48s           2024-05-11T16:08:25
+/opt/airflow/dags/transform_dag.py                           1           0  0.62s           2024-05-11T16:08:14
+/opt/airflow/dags/airflowtuto.py                             1           0  0.12s           2024-05-11T16:07:59
+================================================================================
+[2024-05-11T16:08:33.590+0000] {manager.py:738} INFO - Searching for files in /opt/airflow/dags
+[2024-05-11T16:08:33.593+0000] {manager.py:741} INFO - There are 3 files in /opt/airflow/dags
+[2024-05-11T16:08:58.335+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.74s           2024-05-11T16:08:56
+/opt/airflow/dags/transform_dag.py                           1           0  0.61s           2024-05-11T16:08:45
+/opt/airflow/dags/airflowtuto.py                             1           0  0.11s           2024-05-11T16:08:29
+================================================================================
+[2024-05-11T16:09:28.348+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.67s           2024-05-11T16:09:27
+/opt/airflow/dags/transform_dag.py                           1           0  0.67s           2024-05-11T16:09:16
+/opt/airflow/dags/airflowtuto.py                             1           0  0.24s           2024-05-11T16:09:00
+================================================================================
+[2024-05-11T16:09:59.087+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.66s           2024-05-11T16:09:58
+/opt/airflow/dags/transform_dag.py                           1           0  0.56s           2024-05-11T16:09:47
+/opt/airflow/dags/airflowtuto.py                             1           0  0.11s           2024-05-11T16:09:31
+================================================================================
+[2024-05-11T16:10:29.114+0000] {manager.py:879} INFO - 
+================================================================================
+DAG File Processing Stats
+
+File Path                           PID    Runtime      # DAGs    # Errors  Last Runtime    Last Run
+----------------------------------  -----  ---------  --------  ----------  --------------  -------------------
+/opt/airflow/dags/ademe_dag.py                               1           0  0.72s           2024-05-11T16:10:29
+/opt/airflow/dags/transform_dag.py                           1           0  0.69s           2024-05-11T16:10:18
+/opt/airflow/dags/airflowtuto.py                             1           0  0.16s           2024-05-11T16:10:02
+================================================================================

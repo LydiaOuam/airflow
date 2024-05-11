@@ -1,0 +1,9 @@
+{
+    "url": "https://data.ademe.fr/data-fair/api/v1/datasets/dpe-v2-tertiaire-2/lines",
+    "payload": {
+        "size": "100",
+        "sort": "Date_visite_diagnostiqueur",
+        "format": "json",
+        "after": "1628035200000,39679,772527"
+    }
+}

@@ -27,8 +27,8 @@ def transform():
     columns = ",".join(FeatureSets.input_columns)
     query = f"""
         select {columns}
-        from dpe_tertiaire
-        where n_dpe not in (select n_dpe from dpe_training)
+        from  logement
+        where n_dpe not in (select n_dpe from db_ademe)
         order by id desc
         limit 200
     """
@@ -44,7 +44,7 @@ def transform():
         fp.data.loc[i, "payload"] = json.dumps(dict(d))
 
     fp.data[["n_dpe", "payload"]].to_sql(
-        name="dpe_training", con=db.engine, if_exists="append", index=False
+        name="logement", con=db.engine, if_exists="append", index=False
     )
 
     db.close()
@@ -52,12 +52,12 @@ def transform():
 
 def drop_duplicates():
     query = """
-        DELETE FROM dpe_training
+        DELETE FROM logement
         WHERE n_dpe IN (
         SELECT n_dpe
         FROM (
             SELECT n_dpe, ROW_NUMBER() OVER (PARTITION BY n_dpe ORDER BY id DESC) AS rn
-            FROM dpe_training
+            FROM  logement
         ) t
         WHERE t.rn > 1
         );

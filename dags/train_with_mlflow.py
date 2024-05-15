@@ -14,8 +14,6 @@ pd.options.display.width = 160
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from sklearn.metrics import precision_score, recall_score
 from sklearn.ensemble import RandomForestClassifier
-from features import FeatureProcessor, FeatureSets
-
 from db_utils import Database
 import time
 import random
@@ -24,8 +22,8 @@ from mlflow import MlflowClient
 
 # local = True
 # if local:
-remote_server_uri = "http://localhost:9090"
-experiment_name = "dpe_tertiaire"
+remote_server_uri = "http://13.82.178.239:5001/"
+experiment_name = "dpe_logement"
 
 # else:
 #     # Configure MLflow to communicate with a Databricks-hosted tracking server
@@ -42,7 +40,7 @@ mlflow.sklearn.autolog()
 def load_data_inference(n_samples):
     db = Database()
     query = f"""
-select * from dpe_training
+select * from logement
 order by created_at desc
 limit {n_samples}
 """
@@ -61,7 +59,7 @@ limit {n_samples}
 def load_data(n_samples):
     db = Database()
     query = f"""
-select * from dpe_training
+select * from logement
 order by random()
 limit {n_samples}
 """
@@ -98,7 +96,7 @@ class TrainDPE:
         data.reset_index(inplace=True, drop=True)
         if data.shape[0] < TrainDPE.minimum_training_samples:
             raise NotEnoughSamples(
-                "data has {data.shape[0]} samples, which is not enough to train a model. min required {TrainDPE.minimum_training_samples}"
+                f"data has {data.shape[0]} samples, which is not enough to train a model. min required {TrainDPE.minimum_training_samples}"
             )
 
         self.data = data
@@ -170,104 +168,5 @@ if __name__ == "__main__":
         train.main()
         train.report()
 
-#         challenger_model_name = "dpe_challenger"
-#         champion_model_name = "dpe_champion"
-
-#         client = MlflowClient()
-#         run_id = run.info.run_id
-#         model_uri = f"runs:/{run_id}/model"
-
-#         try:
-#             model = client.get_registered_model(challenger_model_name)
-#         except:
-#             print("model does not exist")
-#             print("registering new model", challenger_model_name)
-#             client.create_registered_model(challenger_model_name, description = "sklearn random forest for dpe_tertiaire")
-
-#         # set version and stage
-#         model_version = client.create_model_version(
-#             name=challenger_model_name,
-#             source=model_uri,
-#             run_id=run_id
-#         )
-
-#         client.transition_model_version_stage(
-#             name=challenger_model_name,
-#             version=model_version.version,
-#             stage = 'Staging'
-#         )
-#     # end run
-#     print("--"*20, "Inference")
-#     # test if production model exists
-#     results = client.search_registered_models(filter_string=f"name='{champion_model_name}'")
-#     # if not exists: promote current model
-#     if len(results) == 0:
-#         print("champion model not found, promoting challenger to champion")
-
-#         champion_model = client.copy_model_version(
-#             src_model_uri=f"models:/{challenger_model_name}/Staging",
-#             dst_name=champion_model_name,
-#         )
-#         client.transition_model_version_stage(
-#             name=champion_model_name,
-#             version=champion_model.version,
-#             stage = 'Staging'
-#         )
-
-#         # reload champion and print info
-#         results = client.search_registered_models(filter_string=f"name='{champion_model_name}'")
-#         print(results[0].latest_versions)
-
-
-#     else:
-#         # if exists:
-#         # load data
-#         data = load_data_inference(1000)
-#         print(data.shape)
-#         y = data['etiquette_dpe']
-#         X = data[FeatureSets.train_columns]
-#         # inference challenger and champion
-#         # load model & inference
-#         chl = mlflow.sklearn.load_model(f"models:/{challenger_model_name}/Staging")
-#         yhat = chl.best_estimator_.predict(X)
-#         challenger_precision = precision_score(y, yhat, average="weighted")
-#         challenger_recall = recall_score(y, yhat, average="weighted")
-#         print(f"\t challenger_precision: {np.round(challenger_precision, 2)}")
-#         print(f"\t challenger_recall: {np.round(challenger_recall, 2)}")
-
-#         # inference on production model
-#         champ = mlflow.sklearn.load_model(f"models:/{champion_model_name}/Staging")
-#         yhat = champ.best_estimator_.predict(X)
-#         champion_precision = precision_score(y, yhat, average="weighted")
-#         champion_recall = recall_score(y, yhat, average="weighted")
-#         print(f"\t champion_precision: {np.round(champion_precision, 2)}")
-#         print(f"\t champion_recall: {np.round(champion_recall, 2)}")
-
-#         # if performance 5% above current champion: promote
-#         if challenger_precision > champion_precision * 1.05:
-#             print(f"{challenger_precision} > {champion_precision}")
-#             print("Promoting new model to champion ")
-#             champion_model = client.copy_model_version(
-#                 src_model_uri=f"models:/{challenger_model_name}/Staging",
-#                 dst_name=champion_model_name,
-#             )
-
-#             client.transition_model_version_stage(
-#                 name=champion_model_name,
-#                 version=champion_model.version,
-#                 stage = 'Staging'
-#             )
-#         else:
-#             print(f"{challenger_precision} < {champion_precision}")
-#             print("champion remains undefeated ")
-
-
-#     print(f"elapsed: {int(time.time()) - ctime}s", )
-
-
-#     print("-" * 80)
-#     for res in client.search_registered_models():
-#         for mv in res.latest_versions:
-#             print(mv)
 
 

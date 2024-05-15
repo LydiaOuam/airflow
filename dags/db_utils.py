@@ -9,11 +9,14 @@ from airflow.models import Variable
 
 class Database:
     def __init__(self):
-        
+         try:
+            pg_password = Variable.get("AZURE_PG_PASSWORD")
+        except:
+            pg_password = os.environ.get("AZURE_PG_PASSWORD")
         db_params = {
             "dbname": "db_ademe",
             "user": "ouamrane_lydia2022",
-            "password": 'Lydia2022#',
+            "password": 'pg_password',
             "host": "postgres-mlops.postgres.database.azure.com",
             "port": "5432",
             "sslmode": "require",

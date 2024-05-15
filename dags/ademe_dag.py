@@ -22,13 +22,11 @@ import re
 from db_utils import Database
 
 
-DATA_PATH = f"/airflow/data/"
-DOWNLOADED_FILES_PATH = os.path.join(DATA_PATH, "ademe-dpe-tertiaire")
-URL_FILE = os.path.join(DATA_PATH, "api/url.json")
-RESULTS_FILE = os.path.join(DATA_PATH,"results.json")
+DATA_PATH = f"/opt/airflow/data/"
+URL_FILE = os.path.join(DATA_PATH, "api","url.json")
+RESULTS_FILE = os.path.join(DATA_PATH,"api","results.json")
 ACCOUNT_NAME = "mlopsstorage2024"
 CONTAINER_NAME = "datamlops2024"
-
 print(URL_FILE)
 
 
@@ -41,7 +39,7 @@ except:
 
 
 
-def rename_columns(columns: t.List[str]) -> t.List[str]:
+def rename_columns(columns):
 
     """
 
@@ -88,7 +86,7 @@ def check_environment_setup():
     logger.info(f"[info logger] RESULTS_FILE: {RESULTS_FILE}")
     logger.info("--" * 20)
 
-def interrogate_api():
+def ademe_api():
     """
     Interrogates the ADEME API using the specified URL and payload from a JSON file.
 
@@ -110,7 +108,6 @@ def interrogate_api():
     # make GET requests
     results = requests.get(url.get("url"), params=url.get("payload"), timeout=5)
     assert results.raise_for_status() is None
-
     data = results.json()
 
     # save results to file
@@ -161,7 +158,7 @@ def process_results():
     with open(data_filename, "w", encoding="utf-8") as file:
         json.dump(data["results"], file, indent=4, ensure_ascii=False)
     
-def upload_data():
+def drop_duplicats():
     """
     Uploads local data files to Azure Blob Storage container.
 
@@ -224,7 +221,7 @@ def save_postgresdb():
         SELECT column_name
         FROM information_schema.columns
         WHERE table_schema = 'public'
-        AND table_name   = 'dpe_tertiaire';
+        AND table_name   = 'dpe_logement';
     """
     table_cols = pd.read_sql(check_cols_query, con=db.engine)
     table_cols = [col for col in table_cols["column_name"] if col != "id"]
@@ -250,12 +247,8 @@ def save_postgresdb():
     logger.info(f"loaded {data.shape}")
 
     # to_sql
-    data.to_sql(name="dpe_tertiaire", con=db.engine, if_exists="append", index=False)
+    data.to_sql(name="dpe_logement", con=db.engine, if_exists="append", index=False)
     db.close()
-
-
-
-
 
 
 
@@ -270,7 +263,7 @@ default_args = {
 }
 
 with DAG(
-    "live_ademe",
+    "load_data",
     default_args=default_args,
     description="Get ademe data",
     schedule='*/5 * * * *',
@@ -286,8 +279,8 @@ with DAG(
     )
 
     interrogate_api = PythonOperator(
-        task_id="interrogate_api",
-        python_callable=interrogate_api,
+        task_id="ademe_api",
+        python_callable=ademe_api,
     )
 
     process_results = PythonOperator(
@@ -296,8 +289,8 @@ with DAG(
     )
 
     upload_data = PythonOperator(
-        task_id="upload_data",
-        python_callable=upload_data,
+        task_id="drop_duplicats",
+        python_callable=drop_duplicats,
     )
     
     save_postgresdb = PythonOperator(
@@ -306,4 +299,4 @@ with DAG(
     )
     
 
-    check_environment_setup >> interrogate_api >> process_results >> [upload_data,save_postgresdb]
+    check_environment_setup >> interrogate_api >> process_results >> save_postgresdb >> upload_data 

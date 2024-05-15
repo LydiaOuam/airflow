@@ -15,7 +15,7 @@ class Database:
             pg_password = os.environ.get("AZURE_PG_PASSWORD")
         
         db_params = {
-            "dbname": "bd-ademe",
+            "dbname": "dpe_logement",
             "user": "user",
             "password": pg_password,
             "host": "cluste-ademe-lydia.postgres.database.azure.com",
@@ -49,7 +49,7 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    query = "select count(*) from dpe_tertiaire;"
+    query = "select count(*) from dpe_logement;"
     cur = db.connection.cursor()
     # Execute a query
     cur.execute(query)

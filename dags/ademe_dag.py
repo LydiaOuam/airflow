@@ -221,7 +221,7 @@ def save_postgresdb():
         SELECT column_name
         FROM information_schema.columns
         WHERE table_schema = 'public'
-        AND table_name   = 'dpe_logement';
+        AND table_name   = 'logement';
     """
     table_cols = pd.read_sql(check_cols_query, con=db.engine)
     table_cols = [col for col in table_cols["column_name"] if col != "id"]
@@ -247,7 +247,7 @@ def save_postgresdb():
     logger.info(f"loaded {data.shape}")
 
     # to_sql
-    data.to_sql(name="dpe_logement", con=db.engine, if_exists="append", index=False)
+    data.to_sql(name="logement", con=db.engine, if_exists="append", index=False)
     db.close()
 
 

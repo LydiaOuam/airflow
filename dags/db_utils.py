@@ -9,15 +9,14 @@ from airflow.models import Variable
 
 class Database:
     def __init__(self):
-        # try:
-        #     pg_password = Variable.get("AZURE_PG_PASSWORD")
-        # except:
-        #     pg_password = os.environ.get("AZURE_PG_PASSWORD")
-        pg_password = "Passe2024#"
+        try:
+            pg_password = Variable.get("AZURE_PG_PASSWORD")
+        except:
+            pg_password = os.environ.get("AZURE_PG_PASSWORD")
         db_params = {
             "dbname": "db_ademe",
             "user": "ouamrane_lydia2022",
-            "password": "Passe2024#",
+            "password": 'pg_password',
             "host": "postgres-mlops.postgres.database.azure.com",
             "port": "5432",
             "sslmode": "require",
@@ -25,7 +24,7 @@ class Database:
 
         self.connection = psycopg2.connect(**db_params)
         self.engine = create_engine(
-            f"postgresql://ouamrane_lydia2022:Passe2024#@postgres-mlops.postgres.database.azure.com:5432/db_ademe"
+            f"postgresql://ouamrane_lydia2022:{db_params['password']}@postgres-mlops.postgres.database.azure.com:5432/db_ademe"
         )
 
     def insert(self, insert_query):

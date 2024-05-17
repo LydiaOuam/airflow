@@ -20,6 +20,48 @@ from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
 
+
+
+
+
+class Database:
+    def __init__(self):
+        try:
+            pg_password = Variable.get("AZURE_PG_PASSWORD")
+        except:
+            pg_password = os.environ.get("AZURE_PG_PASSWORD")
+        db_params = {
+            "dbname": "db_ademe",
+            "user": "ouamrane_lydia2022",
+            "password": 'pg_password',
+            "host": "postgres-mlops.postgres.database.azure.com",
+            "port": "5432",
+            "sslmode": "require",
+        }
+
+        self.connection = psycopg2.connect(**db_params)
+        self.engine = create_engine(
+            f"postgresql://{db_params['user']}:{db_params['password']}@{db_params['host']}:{db_params['port']}/{db_params['dbname']}"
+        )
+
+    def insert(self, insert_query):
+        cursor = self.connection.cursor()
+
+        cursor.execute(insert_query)
+        self.connection.commit()
+        cursor.close()
+
+    def execute(self, query_):
+        cursor = self.connection.cursor()
+
+        cursor.execute(query_)
+        self.connection.commit()
+        cursor.close()
+
+    def close(self):
+        self.connection.close()
+        self.engine.dispose()
+
 logger = logging.getLogger(__name__)
 
 # Chemin du fichier de résultats
@@ -109,23 +151,19 @@ def process_results():
 
 # Initialisation de la connexion à la base de données PostgreSQL
 def init_db_connection(pg_password: str) -> psycopg2._psycopg.connection:
-    """Init connection to PostgreSQL"""
-    db_host = "postgres-mlops.postgres.database.azure.com"
-    db_port = 5432
-    db_user = "ouamrane_lydia2022"
-    db_password = pg_password
-    db_name = "db_ademe"
+    db = Database()
+    query = "select count(*) from logement;"
+    cur = db.connection.cursor()
+    # Execute a query
+    cur.execute(query)
+    # Retrieve query results
+    n = cur.fetchone()
+    print("n:", n)
 
-    # Initialise la connexion à la base de données et retourne l'objet de connexion
-    conn = psycopg2.connect(
-        host=db_host,
-        port=db_port,
-        user=db_user,
-        password=db_password,
-        database=db_name,
-    )
+    active_connections = db.engine.pool.status()
+    print(f"-- active connections {active_connections}")
 
-    return conn
+    db.close()
 
 # Fonction pour renommer les colonnes
 def rename_columns(columns: t.List[str]) -> t.List[str]:

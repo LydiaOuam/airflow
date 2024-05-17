@@ -49,7 +49,7 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    query = "select * from logement;"
+    query = "select * from dpe_logement;"
     cur = db.connection.cursor()
     # Execute a query
     cur.execute(query)
@@ -61,3 +61,4 @@ if __name__ == "__main__":
     print(f"-- active connections {active_connections}")
 
     db.close()
+

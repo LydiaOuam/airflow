@@ -53,7 +53,7 @@ def rename_columns(columns):
 
     rgxs = [
 
-        (r"[°|/|']", "_"),
+        (r"[°/']", "_"),
 
         (r"²", "2"),
 
@@ -180,8 +180,8 @@ def drop_duplicates():
             # Identify and delete duplicate rows, keeping the first occurrence
             conn.execute(text("""
                 DELETE FROM dpe_logement
-                WHERE ctid NOT IN (
-                    SELECT min(ctid)
+                WHERE id NOT IN (
+                    SELECT min(id)
                     FROM dpe_logement
                     GROUP BY n_dpe, payload
                 );

@@ -43,26 +43,8 @@ def transform():
 
     df_new = pd.DataFrame(new_rows)
 
-    # Store the new data in another table
+    # Store the new data in anotation
     df_new.to_sql('dpe_training', con=db.engine, if_exists='replace', index=False)
-    db.close()
-
-
-def drop_duplicates():
-    query = """
-        DELETE FROM dpe_training
-        WHERE n_dpe IN (
-        SELECT n_dpe
-        FROM (
-            SELECT n_dpe, ROW_NUMBER() OVER (PARTITION BY n_dpe ORDER BY id DESC) AS rn
-            FROM dpe_training
-        ) t
-        WHERE t.rn > 1
-        );
-    """
-
-    db = Database()
-    db.execute(query)
     db.close()
 
 # DAG definition
@@ -87,9 +69,6 @@ with DAG(
         task_id="transform_data",
         python_callable=transform
     )
-    drop_duplicates = PythonOperator(
-        task_id="drop_duplicates", python_callable=drop_duplicates
-    )
+   
 
-    transform_data >> drop_duplicates
-
+    transform_data 

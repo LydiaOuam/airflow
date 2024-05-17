@@ -263,7 +263,7 @@ default_args = {
 }
 
 with DAG(
-    "load_data",
+    "load_data1",
     default_args=default_args,
     description="Get ademe data",
     schedule='*/5 * * * *',

@@ -16,7 +16,7 @@ class Database:
         db_params = {
             "dbname": "db_ademe",
             "user": "ouamrane_lydia2022",
-            "password": 'pg_password',
+            "password": pg_password,
             "host": "postgres-mlops.postgres.database.azure.com",
             "port": "5432",
             "sslmode": "require",

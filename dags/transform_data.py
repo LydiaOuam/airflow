@@ -1,51 +1,54 @@
-"""
-### Tutorial Documentation
-Documentation that goes along with the Airflow tutorial located
-[here](https://airflow.apache.org/tutorial.html)
-"""
 import json
+import logging
 from datetime import datetime, timedelta
 import pandas as pd
 
+
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
+from db_utils import Database
 
-from src import FeatureSets, Database, FeatureProcessor
+logger = logging.getLogger(__name__)
 
-# ---------------------------------------------
-# instanciate class
-# ---------------------------------------------
+input_columns = [
+    "etiquette_dpe",
+    "etiquette_ges",
+    "version_dpe",
+    "type_energie_principale_chauffage",
+    "type_energie_n_1",
+]
 
 def transform():
-    """Transform data"""
-    db = Database()
-    columns = ",".join(FeatureSets.input_columns)
-    query = f"""
-        select {columns}
-        from dpe_tertiaire
-        where n_dpe not in (select n_dpe from dpe_training)
-        order by id desc
-        limit 200
     """
+    Function to transform data from the dpe_logement table and store it in the dpe_training table.
+    """
+    db = Database()
+    query = "SELECT * FROM dpe_logement"
     data = pd.read_sql(query, con=db.engine)
-    # handled by the DAG
-    fp = FeatureProcessor(data, "etiquette_dpe")
-    fp.process()
-    print(fp.data.head())
-    # save to db
 
-    fp.data = fp.data.astype(str)
-    for i, d in fp.data.iterrows():
-        fp.data.loc[i, "payload"] = json.dumps(dict(d))
+    # Displaying the first few rows of the fetched data
+    logger.info(data.head())
 
-    fp.data[["n_dpe", "payload"]].to_sql(
-        name="dpe_training", con=db.engine, if_exists="append", index=False
-    )
+    new_rows = []
+    # Iterate through the rows of the DataFrame
+    for _, row in data.iterrows():
+        # Ensure that the payload is a dictionary
+        payload = json.loads(row['payload']) if isinstance(row['payload'], str) else row['payload']
 
+        # Creating a dictionary for the new entries
+        filtered_payload = {key: payload[key] for key in input_columns if key in payload}
+
+        # Adding the new line to the list
+        new_rows.append({'n_dpe': row['n_dpe'], 'payload': json.dumps(filtered_payload)})
+
+    df_new = pd.DataFrame(new_rows)
+
+    # Store the new data in another table
+    df_new.to_sql('dpe_training', con=db.engine, if_exists='replace', index=False)
     db.close()
 
+
 def drop_duplicates():
-    """Drop duplicates"""
     query = """
         DELETE FROM dpe_training
         WHERE n_dpe IN (
@@ -62,25 +65,31 @@ def drop_duplicates():
     db.execute(query)
     db.close()
 
-
-# ---------------------------------------------
-#  DAG
-# ---------------------------------------------
+# DAG definition
 with DAG(
-    "ademe_transform_data",
+    "transform_data",
     default_args={
+        "owner": "airflow",
+        "depends_on_past": False,
+        "email_on_failure": False,
+        "email_on_retry": False,
+        "email": ["your-email@example.com"],
         "retries": 0,
         "retry_delay": timedelta(minutes=10),
     },
-    description="Get raw data from dpe-tertiaire, transform and store into training_data",
-    schedule="*/3 * * * *",
+    description="Transform raw data from dpe_logement, and store into dpe_training",
+    schedule_interval="*/3 * * * *",
     start_date=datetime(2024, 1, 1),
     catchup=False,
     tags=["ademe"],
 ) as dag:
-    transform_data_task = PythonOperator(task_id="transform_data_task", python_callable=transform)
-    drop_duplicates_task = PythonOperator(
-        task_id="drop_duplicates_task", python_callable=drop_duplicates
+    transform_data = PythonOperator(
+        task_id="transform_data",
+        python_callable=transform
+    )
+    drop_duplicates = PythonOperator(
+        task_id="drop_duplicates", python_callable=drop_duplicates
     )
 
-    print(transform_data_task >> drop_duplicates_task)
+    transform_data >> drop_duplicates
+

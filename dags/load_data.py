@@ -110,11 +110,11 @@ def process_results():
 # Initialisation de la connexion à la base de données PostgreSQL
 def init_db_connection(pg_password: str) -> psycopg2._psycopg.connection:
     """Init connection to PostgreSQL"""
-    db_host = "mlops-ynov.postgres.database.azure.com"
+    db_host = "postgres-mlops.postgres.database.azure.com"
     db_port = 5432
-    db_user = "azureuser"
+    db_user = "ouamrane_lydia2022"
     db_password = pg_password
-    db_name = "postgres"
+    db_name = "db_ademe"
 
     # Initialise la connexion à la base de données et retourne l'objet de connexion
     conn = psycopg2.connect(

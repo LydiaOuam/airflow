@@ -9,7 +9,7 @@ from airflow.models import Variable
 
 class Database:
     def __init__(self):
-         try:
+        try:
             pg_password = Variable.get("AZURE_PG_PASSWORD")
         except:
             pg_password = os.environ.get("AZURE_PG_PASSWORD")

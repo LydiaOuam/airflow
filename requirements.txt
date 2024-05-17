@@ -1,0 +1,10 @@
+azure.storage.blob == 12.20.0
+apache-airflow==2.8.3
+black==23.3.0
+fastapi==0.110.0
+flask==2.2
+ipython==8.14.0
+mlflow==2.10.2
+numpy==1.26.3
+pandas==2.1.4
+pylint==2.17.3

@@ -1,9 +1,9 @@
 {
     "url": "https://data.ademe.fr/data-fair/api/v1/datasets/dpe-v2-logements-neufs/lines",
     "payload": {
-        "size": "100",
+        "size": "200",
         "sort": "Date_visite_diagnostiqueur",
         "format": "json",
-        "after": "1628726400000,42616,140439"
+        "after": "1625702400000,63214,270930"
     }
 }

@@ -78,6 +78,8 @@ def rename_columns(columns):
 
 
 def check_environment_setup():
+    """vérifiez que tous les fichiers sont dispo et les variables d'environnement bien déclarées
+    """
     logger.info("--" * 20)
     logger.info(f"[info logger] cwd: {os.getcwd()}")
     assert os.path.isfile(URL_FILE)
@@ -87,18 +89,9 @@ def check_environment_setup():
     logger.info("--" * 20)
 
 def ademe_api():
+    """get data from ademe API (version logement neufs pas DPE tertiaire)
     """
-    Interrogates the ADEME API using the specified URL and payload from a JSON file.
-
-    - Reads the URL and payload from a JSON file defined by the constant `URL_FILE`.
-    - Performs a GET request to the obtained URL with the given payload.
-    - Saves the results to a JSON file defined by the constant `RESULTS_FILE`.
-
-    Raises:
-        AssertionError: If the URL file does not exist, or if the retrieved URL or payload is None.
-        requests.exceptions.RequestException: If the GET request encounters an error.
-
-    """
+    assert os.path.isfile(URL_FILE), f"URL file not found: {URL_FILE}"
     # open url file
     with open(URL_FILE, encoding="utf-8") as file:
         url = json.load(file)
@@ -117,20 +110,7 @@ def ademe_api():
 
 def process_results():
 
-    """
-    Processes the results obtained from the previous API call,
-    updates the URL file,
-    and saves the data to a new file.
-
-    - Reads the results from a JSON file defined by the constant `RESULTS_FILE`.
-    - Extracts the base URL and payload from the 'next' field of the results.
-    - Updates the URL file with the same URL and the new payload.
-    - Saves the results data to a new JSON file with a filename containing a timestamp.
-
-    Raises:
-        AssertionError: If the results file does not exist.
-
-    """
+    """get next url"""
 
     # read previous API call output
     with open(RESULTS_FILE, encoding="utf-8") as file:
@@ -157,98 +137,60 @@ def process_results():
 
     with open(data_filename, "w", encoding="utf-8") as file:
         json.dump(data["results"], file, indent=4, ensure_ascii=False)
-    
-def drop_duplicats():
-    """
-    Uploads local data files to Azure Blob Storage container.
 
-    - Establishes a connection to the Azure Blob Storage using the provided account credentials.
-    - Retrieves the list of existing blobs in the specified container.
-    - Gets a list of local data files to upload.
-    - Uploads each local file to the container if it doesn't already exist.
 
-    Environment Variables:
-        STORAGE_BLOB_ADEME_MLOPS: Azure Storage account key.
 
-    """
 
-    connection_string = f"DefaultEndpointsProtocol=https;AccountName={ACCOUNT_NAME};"
-    connection_string += f"AccountKey={ACCOUNT_KEY};EndpointSuffix=core.windows.net"
 
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-
-    container_client = blob_service_client.get_container_client(container=CONTAINER_NAME)
-
-    # List all blobs in the container
-    blobs_list = [file["name"] for file in container_client.list_blobs()]
-
-    # get all data files on local
-    local_data_files = glob.glob(f"{DATA_PATH}/*.json")
-    for filename in local_data_files:
-        blob_name = filename.split("/")[-1]
-        if blob_name not in blobs_list:
-            # upload file to container
-            blob_client = blob_service_client.get_blob_client(
-                container=CONTAINER_NAME,
-                blob=blob_name
-            )
-
-            print("\nUploading to Azure Storage as blob:\n\t" + blob_name)
-
-            # Upload the created file
-            with open(filename, "rb") as data:
-                blob_client.upload_blob(data, overwrite=True)
-
-            print("\nUpload completed")
 
 def save_postgresdb():
-    assert os.path.isfile(RESULTS_FILE)
-
-    # read previous API call output
+    """
+    Save fetched data into PostgreSQL database.
+    """
+    assert os.path.isfile(RESULTS_FILE), f"Results file not found: {RESULTS_FILE}"
     with open(RESULTS_FILE, encoding="utf-8") as file:
         data = json.load(file)
 
-    data = pd.DataFrame(data["results"])
-    
-    # set columns
-    new_columns = rename_columns(data.columns)
-    data.columns = new_columns
-    data = data.astype(str).replace("nan", "")
+    df = pd.DataFrame(data["results"])
+    new_columns = rename_columns(df.columns)
+    df.columns = new_columns
+    df = df.astype(str).replace("nan", "")
+    df['payload'] = df.apply(lambda row: json.dumps(row.to_dict()), axis=1)
+    df = df[['n_dpe', 'payload']]
 
-    # now check that the data does not have columns not already in the table
     db = Database()
-    check_cols_query = """
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-        AND table_name   = 'logement';
+    try:
+        df.to_sql(name="dpe_logement", con=db.engine, if_exists="append", index=False)
+        logger.info("Data successfully stored to the database.")
+    except Exception as e:
+        logger.error("An error occurred while storing data: %s", e)
+    finally:
+        db.close()
+
+
+
+def drop_duplicates():
     """
-    table_cols = pd.read_sql(check_cols_query, con=db.engine)
-    table_cols = [col for col in table_cols["column_name"] if col != "id"]
-
-    # drop data columns not in table_cols
-    for col in data.columns:
-        if col not in table_cols:
-            data.drop(columns=[col], inplace=True)
-            logger.info(f"dropped column {col} from dataset")
-
-    # add empty columns in data that are in the table
-    for col in table_cols:
-        if col not in data.columns:
-            if col in ["created_at", "modified_at"]:
-                data[col] = datetime.now()
-            else:
-                data[col] = ""
-            logger.info(f"added column {col} in data")
-
-    # data = data[table_cols].copy()
-    assert sorted(data.columns) == sorted(table_cols)
-
-    logger.info(f"loaded {data.shape}")
-
-    # to_sql
-    data.to_sql(name="logement", con=db.engine, if_exists="append", index=False)
-    db.close()
+    Drop duplicate rows in the PostgreSQL table `dpe_logement`.
+    Duplicates are identified based on `n_dpe` and `payload` columns.
+    """
+    db = Database()
+    try:
+        with db.engine.connect() as conn:
+            # Identify and delete duplicate rows, keeping the first occurrence
+            conn.execute(text("""
+                DELETE FROM dpe_logement
+                WHERE ctid NOT IN (
+                    SELECT min(ctid)
+                    FROM dpe_logement
+                    GROUP BY n_dpe, payload
+                );
+            """))
+            logger.info("Duplicates successfully dropped from the database.")
+    except Exception as e:
+        logger.error(f"An error occurred while dropping duplicates: {e}")
+    finally:
+        db.close()
 
 
 
@@ -278,25 +220,24 @@ with DAG(
         python_callable=check_environment_setup,
     )
 
-    interrogate_api = PythonOperator(
+    ademe_api = PythonOperator(
         task_id="ademe_api",
         python_callable=ademe_api,
     )
-
     process_results = PythonOperator(
         task_id="process_results",
         python_callable=process_results,
     )
-
-    upload_data = PythonOperator(
-        task_id="drop_duplicats",
-        python_callable=drop_duplicats,
-    )
-    
     save_postgresdb = PythonOperator(
         task_id="save_postgresdb",
         python_callable=save_postgresdb,
     )
     
+    
+    drop_duplicates = PythonOperator(
+        task_id="drop_duplicates",
+        python_callable=drop_duplicates,
+    )
+        
 
-    check_environment_setup >> interrogate_api >> process_results >> save_postgresdb >> upload_data 
+    check_environment_setup >> ademe_api >> process_results >> save_postgresdb >> drop_duplicates 

@@ -13,6 +13,7 @@ class Database:
             pg_password = Variable.get("AZURE_PG_PASSWORD")
         except:
             pg_password = os.environ.get("AZURE_PG_PASSWORD")
+        print(pg_password)
         db_params = {
             "dbname": "db_ademe",
             "user": "ouamrane_lydia2022",

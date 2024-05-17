@@ -25,7 +25,7 @@ class Database:
 
         self.connection = psycopg2.connect(**db_params)
         self.engine = create_engine(
-            f"postgresql://{db_params['user']}:{db_params['password']}@{db_params['host']}:{db_params['port']}/{db_params['dbname']}"
+            f"postgresql://ouamrane_lydia2022:Passe2024#@postgres-mlops.postgres.database.azure.com:5432/db_ademe"
         )
 
     def insert(self, insert_query):
@@ -49,7 +49,7 @@ class Database:
 
 if __name__ == "__main__":
     db = Database()
-    query = "select count(*) from logement;"
+    query = "select * from logement;"
     cur = db.connection.cursor()
     # Execute a query
     cur.execute(query)

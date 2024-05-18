@@ -6,7 +6,8 @@
 6. Se connecter à airflow : http://13.82.178.239:8080/home
 7. Mot de passe airflow : airflow, airflow
 8. Se connecter Mlflow : http://13.82.178.239:5001/
-9. Base de donnée sur Postgre : c'est db_ademe, mot de passe : Passe2024#
+9. Se connecter a la base de donnée sur Postgre : db_ademe, mot de passe : Passe2024#
+psql "--host=postgres-mlops.postgres.database.azure.com" "--port=5432" "--dbname=db_ademe" "--username=ouamrane_lydia2022" "--set=sslmode=require"
 
 
 ## Membre Du Group 

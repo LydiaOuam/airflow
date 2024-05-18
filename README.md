@@ -8,7 +8,7 @@
 8. Se connecter Mlflow : http://13.82.178.239:5001/
 9. Se connecter a la base de donnée sur Postgres : db_ademe, mot de passe : Passe2024#
 
-avec la Commande : psql "--host=postgres-mlops.postgres.database.azure.com" "--port=5432" "--dbname=db_ademe" "--username=ouamrane_lydia2022" "--set=sslmode=require"
+   avec la Commande : psql "--host=postgres-mlops.postgres.database.azure.com" "--port=5432" "--dbname=db_ademe" "--username=ouamrane_lydia2022" "--set=sslmode=require"
 
 
 ## Membre Du Groupe:

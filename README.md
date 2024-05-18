@@ -10,3 +10,5 @@
 11.     Se connecter Mlflow : http://13.82.178.239:5001/
 
 12. Ce qui reste a faire : modifier le code pour qu'il soit adapter aux nouvelles data
+
+

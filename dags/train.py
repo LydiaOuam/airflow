@@ -1,143 +1,41 @@
 """
-Training the model
+--------Train Model----------- 
 """
+
 import json
-from datetime import datetime, timedelta
-import pandas as pd
 import numpy as np
-
-from sklearn.metrics import precision_score, recall_score
-from sklearn.preprocessing import LabelEncoder  # convert categorical to numerical
-from sklearn.model_selection import train_test_split, GridSearchCV, KFold
+import pandas as pd
+from datetime import datetime, timedelta
 from sklearn.ensemble import RandomForestClassifier
-
-
-import mlflow
-
-import logging
-
-from airflow.models.dag import DAG
+from sklearn.metrics import precision_score, recall_score
+from sklearn.model_selection import train_test_split, GridSearchCV, KFold
+from sklearn.preprocessing import LabelEncoder
+from airflow import DAG
 from airflow.operators.python import PythonOperator
-
-# local
+from sqlalchemy import create_engine
 from db_utils import Database
-
 import random
+import mlflow
+from mlflow.tracking import MlflowClient
 
+#--------------Logger setup
+import logging
 logger = logging.getLogger(__name__)
-
-
-# --------------------------------------------------
-# TrainDPE class
-# --------------------------------------------------
-
-
-class NotEnoughSamples(ValueError):
-    pass
-
-
-train_columns = ["version_dpe", "type_energie_principale_chauffage", "type_energie_n_1"]
-
-
-class TrainDPE:
-    param_grid = {
-        "n_estimators": sorted([random.randint(1, 20) * 10 for _ in range(2)]),
-        "max_depth": [random.randint(3, 10)],
-        "min_samples_leaf": [random.randint(2, 5)],
-    }
-
-    n_splits = 3
-    test_size = 0.3
-    minimum_training_samples = 200
-
-    def __init__(self, data, target="etiquette_ges"):
-        # drop samples with no target
-        data = data[data[target] >= 0].copy()
-        data.reset_index(inplace=True, drop=True)
-        if data.shape[0] < TrainDPE.minimum_training_samples:
-            raise NotEnoughSamples(
-                "data has {data.shape[0]} samples, which is not enough to train a model. min required {TrainDPE.minimum_training_samples}"
-            )
-
-        self.data = data
-        print(f"training on {data.shape[0]} samples")
-
-        self.model = RandomForestClassifier()
-        self.target = target
-        self.params = {}
-        self.train_score = 0.0
-
-        self.precision_score = 0.0
-        self.recall_score = 0.0
-        self.probabilities = [0.0, 0.0]
-
-    def main(self):
-        # shuffle
-
-        X = self.data[train_columns].copy()  # Features
-        y = self.data[self.target].copy()  # Target variable
-
-        # Split the data into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=TrainDPE.test_size, random_state=808
-        )
-
-        # Setup GridSearchCV with k-fold cross-validation
-        cv = KFold(n_splits=TrainDPE.n_splits, random_state=42, shuffle=True)
-
-        grid_search = GridSearchCV(
-            estimator=self.model, param_grid=TrainDPE.param_grid, cv=cv, scoring="accuracy"
-        )
-
-        # Fit the model
-        grid_search.fit(X_train, y_train)
-
-        self.model = grid_search.best_estimator_
-        self.params = grid_search.best_params_
-        self.train_score = grid_search.best_score_
-
-        yhat = grid_search.predict(X_test)
-        self.precision_score = precision_score(y_test, yhat, average="weighted")
-        self.recall_score = recall_score(y_test, yhat, average="weighted")
-        self.probabilities = np.max(grid_search.predict_proba(X_test), axis=1)
-
-    def report(self):
-        # Best parameters and best score
-        print("--" * 20, "Best model")
-        print(f"\tparameters: {self.params}")
-        print(f"\tcross-validation score: {self.train_score}")
-        print(f"\tmodel: {self.model}")
-        print("--" * 20, "performance")
-        print(f"\tprecision_score: {np.round(self.precision_score, 2)}")
-        print(f"\trecall_score: {np.round(self.recall_score, 2)}")
-        print(f"\tmedian(probabilities): {np.round(np.median(self.probabilities), 2)}")
-        print(f"\tstd(probabilities): {np.round(np.std(self.probabilities), 2)}")
-
 
 # --------------------------------------------------
 # set up MLflow
 # --------------------------------------------------
-from mlflow import MlflowClient
-
-experiment_name = "dpe_logement_kafia"
-
-# mlflow.set_tracking_uri("http://host.docker.internal:5001")
-# mlflow.set_tracking_uri("http://localhost:9090")
 
 mlflow.set_tracking_uri("http://13.82.178.239:5001/")
-
-
-print("--" * 40)
-print("mlflow set experiment")
-print("--" * 40)
-mlflow.set_experiment(experiment_name)
-
+mlflow.set_experiment("dpe_logement")
 mlflow.sklearn.autolog()
 
-# --------------------------------------------------
-# load data
-# --------------------------------------------------
+#------Constants
+TRAIN_COLUMNS = ["version_dpe", "type_energie_principale_chauffage", "type_energie_n_1"]
 
+class NotEnoughSamples(ValueError):
+    """Exception when there are not enough samples to train a model."""
+    pass
 
 def load_data_for_inference(n_samples):
     db = Database()
@@ -156,91 +54,71 @@ def load_data_for_inference(n_samples):
 
     data.reset_index(inplace=True, drop=True)
     y = data["etiquette_ges"]
-    X = data[train_columns]
+    X = data[TRAIN_COLUMNS]
 
     return X, y
 
 
 def load_data_for_training(n_samples):
-    # TODO simply load payload not all columns
     db = Database()
-    query = f"select * from dpe_training limit {n_samples}"
+    # SQL Query
+    query = f"SELECT payload FROM dpe_training LIMIT {n_samples}"
     df = pd.read_sql(query, con=db.engine)
     db.close()
-    # dump payload into new dataframe
-    df["payload"] = df["payload"].apply(lambda d: json.loads(d))
-    data = pd.DataFrame(list(df.payload.values))
-    # data = data.astype(int)
+    # Convert the 'payload' JSON into a DataFrame
+    df['payload'] = df['payload'].apply(json.loads)
+    data = pd.DataFrame(df['payload'].tolist())
     le = LabelEncoder()
-
-    # Apply LabelEncoder to each column in the DataFrame
     for col in data.columns:
         data[col] = le.fit_transform(data[col])
-
     data.reset_index(inplace=True, drop=True)
     print(data.head())
     return data
 
 
-# ---------------------------------------------
-#  tasks
-# ---------------------------------------------
-challenger_model_name = "dpe_challenger"
-champion_model_name = "dpe_champion"
-client = MlflowClient()
-
-
 def train_model():
-    data = load_data_for_training(n_samples=200)
-    with mlflow.start_run() as run:
-        train = TrainDPE(data)
-        train.main()
-        train.report()
+    """Trains a RandomForest model and logs the model with MLflow."""
+    data = load_data_for_training(200)  # Passing the sample size directly
+    if data.shape[0] < 200:
+        raise NotEnoughSamples("Not enough samples to train the model.")
 
-        try:
-            model = client.get_registered_model(challenger_model_name)
-        except:
-            print("model does not exist")
-            print("registering new model", challenger_model_name)
-            client.create_registered_model(
-                challenger_model_name, description="sklearn random forest for dpe_logement"
-            )
+    X = data[TRAIN_COLUMNS]
+    y = data["etiquette_ges"]
 
-        # set version and stage
-        run_id = run.info.run_id
-        model_uri = f"runs:/{run_id}/model"
-        model_version = client.create_model_version(
-            name=challenger_model_name, source=model_uri, run_id=run_id
-        )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    param_grid = {
+        "n_estimators": sorted([random.randint(1, 20) * 10 for _ in range(2)]),
+        "max_depth": [random.randint(3, 10)],
+        "min_samples_leaf": [random.randint(2, 5)],       
+    }
+    cv = KFold(n_splits=3, shuffle=True, random_state=42)
+    grid_search = GridSearchCV(RandomForestClassifier(), param_grid, cv=cv, scoring="accuracy")
+    grid_search.fit(X_train, y_train)
 
-        client.transition_model_version_stage(
-            name=challenger_model_name, version=model_version.version, stage="Staging"
-        )
+    y_pred = grid_search.predict(X_test)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
 
+    logger.info(f"Precision: {precision}, Recall: {recall}")
 
 def create_champion():
-    """
-    if there is not champion yet, creates a champion from current challenger
-    """
-    results = client.search_registered_models(filter_string=f"name='{champion_model_name}'")
-    # if not exists: promote current model
-    if len(results) == 0:
-        print("champion model not found, promoting challenger to champion")
-
-        champion_model = client.copy_model_version(
-            src_model_uri=f"models:/{challenger_model_name}/Staging",
-            dst_name=champion_model_name,
-        )
-        client.transition_model_version_stage(
-            name=champion_model_name, version=champion_model.version, stage="Staging"
-        )
-
-        # reload champion and print info
-        results = client.search_registered_models(filter_string=f"name='{champion_model_name}'")
-        print(results[0].latest_versions)
+    client = MlflowClient()
+    model_name = "dpe_champion"  # Define the model name directly
+    try:
+        results = client.search_registered_models(filter_string=f"name='{model_name}'")
+        if len(results) == 0:
+            print("Champion model not found, creating one.")
+            client.create_registered_model(model_name)
+        else:
+            print("Champion model already exists.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 def promote_model():
+    client = MlflowClient()
+    champion_model_name = "dpe_champion"  # Define the model name directly, assuming this is consistent in your setup
+    challenger_model_name = "dpe_challenger"  
     X, y = load_data_for_inference(200)
     # inference challenger and champion
     # load model & inference
@@ -269,33 +147,39 @@ def promote_model():
         )
 
         client.transition_model_version_stage(
-            name=champion_model_name, version=champion_model.version, stage="Staging"
+            name=champion_model_name, version=champion_model_name.version, stage="Staging"
         )
     else:
         print(f"{challenger_precision} < {champion_precision}")
         print("champion remains undefeated ")
 
 
-# ---------------------------------------------
-#  DAG
-# ---------------------------------------------
-with DAG(
-    "ademe_models",
+# Define the DAG
+dag = DAG(
+    "model_training_promotion",
     default_args={
+        "owner": "airflow",
         "retries": 0,
         "retry_delay": timedelta(minutes=10),
+        "start_date": datetime(2024, 1, 1),
+        "catchup": False
     },
     description="Model training and promotion",
-    start_date=datetime(2024, 1, 1),
-    catchup=False,
-    tags=["ademe"],
-) as dag:
-    train_model_task = PythonOperator(task_id="train_model_task", python_callable=train_model)
+    schedule_interval=timedelta(days=1),
+    tags=["ademe"]
+)
 
-    create_champion_task = PythonOperator(
-        task_id="create_champion_task", python_callable=create_champion
+train_model_task = PythonOperator(
+    task_id="train_model_task", python_callable=train_model, dag=dag
     )
 
-    promote_model_task = PythonOperator(task_id="promote_model_task", python_callable=promote_model)
+create_champion_task = PythonOperator(
+    task_id="create_champion_task", python_callable=create_champion, dag=dag
+    )
 
-    train_model_task >> create_champion_task >> promote_model_task
+promote_model_task = PythonOperator(
+    task_id="promote_model_task", python_callable=promote_model, dag=dag
+    )
+
+train_model_task >> create_champion_task >> promote_model_task
+

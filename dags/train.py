@@ -169,17 +169,17 @@ dag = DAG(
     tags=["ademe"]
 )
 
-train_model_task = PythonOperator(
-    task_id="train_model_task", python_callable=train_model, dag=dag
+train_model = PythonOperator(
+    task_id="train_model", python_callable=train_model, dag=dag
     )
 
-create_champion_task = PythonOperator(
-    task_id="create_champion_task", python_callable=create_champion, dag=dag
+create_champion = PythonOperator(
+    task_id="create_champion", python_callable=create_champion, dag=dag
     )
 
-promote_model_task = PythonOperator(
-    task_id="promote_model_task", python_callable=promote_model, dag=dag
+promote_model = PythonOperator(
+    task_id="promote_model", python_callable=promote_model, dag=dag
     )
 
-train_model_task >> create_champion_task >> promote_model_task
+train_model >> create_champion >> promote_model
 
